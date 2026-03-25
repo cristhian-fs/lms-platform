@@ -1,0 +1,24 @@
+{
+  "name": "@lms-platform/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@lms-platform/db": "workspace:*",
+    "@lms-platform/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@lms-platform/config": "workspace:*",
+    "typescript": "^5"
+  }
+}

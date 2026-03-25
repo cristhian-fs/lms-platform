@@ -1,0 +1,32 @@
+opencollection: 1.0.0
+
+info:
+  name: LMS Platform
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  headers:
+    - name: Origin
+      value: http://localhost:3000
+    - name: Cookie
+      value: better-auth.session_token=vHqAiZOHOTUH7iuOr3V4kXBymU8S8fA3.%2BAV4MUjKjrwjUfCn2vnwNOXp19VTVtuYdPzNkgZgEWE%3D; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=None
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    presets:
+      request:
+        type: http
+        url: http://localhost:3000

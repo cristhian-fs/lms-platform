@@ -1,0 +1,26 @@
+{
+  "name": "@lms-platform/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@lms-platform/auth": "workspace:*",
+    "@lms-platform/db": "workspace:*",
+    "@lms-platform/env": "workspace:*",
+    "dotenv": "catalog:",
+    "drizzle-orm": "^0.45.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@lms-platform/config": "workspace:*",
+    "elysia": "catalog:",
+    "typescript": "^5"
+  }
+}

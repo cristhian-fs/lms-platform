@@ -1,0 +1,25 @@
+info:
+  name: Create Course
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3000/api/courses
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Course title 2",
+        "slug": "course-title-2",
+        "description": "Course 2 description",
+        "thumbnailUrl": "",
+        "level": "intermediate"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
