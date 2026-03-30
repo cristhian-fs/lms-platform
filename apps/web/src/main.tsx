@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 
 import Loader from "./components/loader";
 import { routeTree } from "./routeTree.gen";
-import { queryClient } from "./utils/api";
+import { queryClient } from "./lib/query-client";
 
 const router = createRouter({
   routeTree,
@@ -12,7 +12,9 @@ const router = createRouter({
   defaultPendingComponent: () => <Loader />,
   context: { queryClient },
   Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
   },
 });
 
