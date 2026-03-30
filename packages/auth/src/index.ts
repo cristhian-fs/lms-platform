@@ -3,7 +3,7 @@ import * as schema from "@lms-platform/db/schema/auth";
 import { env } from "@lms-platform/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { openAPI } from "better-auth/plugins";
+import { openAPI, admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -24,5 +24,5 @@ export const auth = betterAuth({
       httpOnly: true,
     },
   },
-  plugins: [openAPI()],
+  plugins: [openAPI(), admin()],
 });
