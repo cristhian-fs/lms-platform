@@ -3,14 +3,24 @@ import * as courseRepo from "../repositories/course";
 
 export { NotFoundError };
 
-export function list(onlyPublished = true) {
-  return courseRepo.findAll(onlyPublished);
+export async function list(onlyPublished = true) {
+  const courses = await courseRepo.findAll(onlyPublished);
+  return courses.map(({ modules, ...course }) => ({
+    ...course,
+    moduleCount: modules.length,
+    lessonCount: modules.reduce((acc, m) => acc + m.lessons.length, 0),
+  }));
 }
 
 export async function getBySlug(slug: string) {
   const course = await courseRepo.findBySlug(slug);
   if (!course) throw new NotFoundError();
   return course;
+}
+
+export async function checkSlug(slug: string) {
+  const course = await courseRepo.findBySlug(slug);
+  return { available: !course };
 }
 
 export async function create(data: {

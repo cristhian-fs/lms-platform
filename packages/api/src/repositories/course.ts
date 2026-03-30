@@ -6,6 +6,16 @@ export function findAll(onlyPublished = true) {
   return db.query.courses.findMany({
     where: onlyPublished ? eq(courses.isPublished, true) : undefined,
     orderBy: (c, { desc }) => [desc(c.createdAt)],
+    with: {
+      modules: {
+        columns: { id: true },
+        with: {
+          lessons: {
+            columns: { id: true },
+          },
+        },
+      },
+    },
   });
 }
 
