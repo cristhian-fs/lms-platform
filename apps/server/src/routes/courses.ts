@@ -1,4 +1,5 @@
 import * as courseService from "@lms-platform/api/services/course";
+import * as courseImportService from "@lms-platform/api/services/courseImport";
 import Elysia, { t } from "elysia";
 
 import { ok } from "@/helpers/response";
@@ -37,10 +38,20 @@ export const courseRoutes = new Elysia()
   .get("/api/courses", async ({ session }) =>
     ok(await courseService.list(!session)),
   )
+  .get(
+    "/api/courses/check-slug",
+    async ({ query }) => ok(await courseService.checkSlug(query.slug)),
+    { query: t.Object({ slug: t.String({ minLength: 1 }) }) },
+  )
   .get("/api/courses/:courseId", async ({ params }) =>
     ok(await courseService.getBySlug(params.courseId)),
   )
   .use(protectedPlugin)
+  .post(
+    "/api/courses/import/preview",
+    async ({ body }) => ok(await courseImportService.previewFromPath(body.path)),
+    { body: t.Object({ path: t.String() }) },
+  )
   .post(
     "/api/courses",
     async ({ body }) => ok(await courseService.create(body), "Course created"),

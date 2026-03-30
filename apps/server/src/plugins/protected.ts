@@ -7,5 +7,6 @@ export const protectedPlugin = new Elysia({ name: "protected" })
     return { session };
   })
   .onBeforeHandle({ as: "scoped" }, ({ session, status }) => {
-    if (!session) return status(401);
+    if (!session)
+      return status(401, { success: false, data: null, message: "Unauthorized" });
   });

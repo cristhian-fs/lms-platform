@@ -12,7 +12,7 @@ import { meRoutes } from "./routes/me";
 import { moduleRoutes } from "./routes/modules";
 import { progressRoutes } from "./routes/progress";
 import { ratingRoutes } from "./routes/ratings";
-import { streamRoutes } from "./routes/stream";
+import { uploadRoutes } from "./routes/upload";
 import { errorHandler } from "./plugins/error-handler";
 
 export const app = new Elysia({ adapter: node() })
@@ -38,8 +38,8 @@ export const app = new Elysia({ adapter: node() })
   .use(courseRoutes)
   .use(moduleRoutes)
   .use(lessonRoutes)
-  .use(streamRoutes)
   .use(enrollmentRoutes)
   .use(progressRoutes)
   .use(ratingRoutes)
+  .use(uploadRoutes)
   .get("/", () => "OK");

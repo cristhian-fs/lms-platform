@@ -1,11 +1,19 @@
-import fs from "node:fs";
-import path from "node:path";
-
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import * as enrollmentRepo from "@lms-platform/api/repositories/enrollment";
 import * as lessonRepo from "@lms-platform/api/repositories/lesson";
+import { env } from "@lms-platform/env/server";
 import Elysia from "elysia";
 
 import { protectedPlugin } from "../plugins/protected";
+
+const s3 = new S3Client({
+  region: env.AWS_REGION,
+  credentials: {
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 async function checkAccess(
   lessonId: string,
@@ -34,9 +42,13 @@ export const streamRoutes = new Elysia()
     if (!result.ok) return status(result.code);
 
     const { lesson } = result;
+    const playlistKey = lesson!.videoUrl!;
+
     let content: string;
     try {
-      content = fs.readFileSync(lesson!.videoUrl!, "utf-8");
+      const command = new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: playlistKey });
+      const response = await s3.send(command);
+      content = await response.Body!.transformToString("utf-8");
     } catch {
       return status(404);
     }
@@ -48,7 +60,8 @@ export const streamRoutes = new Elysia()
       .map((line) => {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith("#")) return line;
-        return segmentBase + path.basename(trimmed);
+        const filename = trimmed.split("/").pop()!;
+        return segmentBase + filename;
       })
       .join("\n");
 
@@ -63,27 +76,19 @@ export const streamRoutes = new Elysia()
     const result = await checkAccess(params.lessonId, session!.user.id);
     if (!result.ok) return status(result.code);
 
-    const { lesson } = result;
-    const playlistDir = path.dirname(lesson!.videoUrl!);
-    const segmentPath = path.resolve(playlistDir, params.segment);
-
-    // Guard against path traversal
-    if (!segmentPath.startsWith(path.resolve(playlistDir))) return status(403);
     if (!params.segment.endsWith(".ts") && !params.segment.endsWith(".m4s")) {
       return status(400);
     }
 
-    let data: Buffer;
-    try {
-      data = fs.readFileSync(segmentPath);
-    } catch {
-      return status(404);
-    }
+    const { lesson } = result;
+    const playlistKey = lesson!.videoUrl!;
+    const segmentKey = playlistKey.replace(/[^/]+$/, params.segment);
 
-    return new Response(data, {
-      headers: {
-        "Content-Type": "video/mp2t",
-        "Cache-Control": "public, max-age=31536000, immutable",
-      },
+    const command = new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: segmentKey });
+    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+
+    return new Response(null, {
+      status: 302,
+      headers: { Location: signedUrl },
     });
   });
