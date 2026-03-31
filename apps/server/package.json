@@ -3,7 +3,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsdown && cp -r ../../packages/db/src/migrations dist/migrations && cp -r src/seeds dist/seeds",
+    "build": "tsdown && cp -r ../../packages/db/src/migrations dist/migrations",
     "seed": "tsx src/migrate-and-seed.ts",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
