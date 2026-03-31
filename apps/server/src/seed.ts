@@ -119,7 +119,8 @@ async function upsertModule(courseId: string, data: ModuleSeed) {
       .insert(modules)
       .values({ courseId, title: data.title, order: data.order })
       .returning();
-    if (!mod) throw new Error(`[seed] failed to insert module order ${data.order}`);
+    if (!mod)
+      throw new Error(`[seed] failed to insert module order ${data.order}`);
     moduleId = mod.id;
   }
 
@@ -164,7 +165,10 @@ async function upsertLesson(moduleId: string, data: LessonSeed) {
 async function seedCourses() {
   const seedFile = env.COURSES_SEED_PATH
     ? path.resolve(env.COURSES_SEED_PATH)
-    : path.join(path.dirname(fileURLToPath(import.meta.url)), "seeds/courses.seed.json");
+    : path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "seeds/courses.seed.json",
+      );
 
   let data: CourseSeed[];
   try {
@@ -186,6 +190,6 @@ async function seedCourses() {
 export async function runSeed() {
   console.log("[seed] running...");
   await seedAdmin();
-  await seedCourses();
+  // await seedCourses();
   console.log("[seed] done");
 }
