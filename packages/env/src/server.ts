@@ -15,6 +15,11 @@ export const env = createEnv({
     R2_SECRET_ACCESS_KEY: z.string().optional(),
     R2_BUCKET_NAME: z.string().optional(),
     R2_PUBLIC_URL: z.string().optional(),
+    // Seed
+    SEED_ADMIN_NAME: z.string(),
+    SEED_ADMIN_EMAIL: z.string(),
+    SEED_ADMIN_PASSWORD: z.string(),
+    COURSES_SEED_PATH: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

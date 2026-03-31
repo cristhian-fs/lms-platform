@@ -3,7 +3,8 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && cp -r ../../packages/db/src/migrations dist/migrations && cp -r src/seeds dist/seeds",
+    "seed": "tsx src/migrate-and-seed.ts",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "tsx watch src/index.ts",
@@ -19,6 +20,7 @@
     "@lms-platform/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
+    "drizzle-orm": "^0.45.1",
     "elysia": "catalog:",
     "zod": "catalog:"
   },
