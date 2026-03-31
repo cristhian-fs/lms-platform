@@ -1,7 +1,0 @@
-info:
-  name: courses
-  type: folder
-  seq: 1
-
-request:
-  auth: inherit
