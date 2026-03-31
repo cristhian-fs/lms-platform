@@ -21,6 +21,8 @@ dist/
 .vercel
 prisma/generated/
 
+src/seeds/courses.seed.json
+
 
 # deps
 node_modules/
