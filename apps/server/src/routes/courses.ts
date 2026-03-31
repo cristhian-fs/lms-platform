@@ -49,7 +49,8 @@ export const courseRoutes = new Elysia()
   .use(protectedPlugin)
   .post(
     "/api/courses/import/preview",
-    async ({ body }) => ok(await courseImportService.previewFromPath(body.path)),
+    async ({ body }) =>
+      ok(await courseImportService.previewFromPath(body.path)),
     { body: t.Object({ path: t.String() }) },
   )
   .post(
@@ -59,7 +60,8 @@ export const courseRoutes = new Elysia()
   )
   .patch(
     "/api/courses/:courseId",
-    async ({ params, body }) => ok(await courseService.update(params.courseId, body)),
+    async ({ params, body }) =>
+      ok(await courseService.update(params.courseId, body)),
     { body: courseUpdateBody },
   )
   .delete("/api/courses/:courseId", async ({ params }) =>
