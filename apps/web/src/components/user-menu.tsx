@@ -95,7 +95,7 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+          <DropdownMenuItem onClick={() => navigate({ to: "/dashboard/settings" })}>
             <Settings aria-hidden="true" />
             Configurações
           </DropdownMenuItem>
