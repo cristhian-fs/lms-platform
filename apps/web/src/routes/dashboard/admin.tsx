@@ -1,5 +1,6 @@
 import { authClient } from "@/lib/auth-client";
 import { CoursesTab } from "@/features/courses/components/courses-tab";
+import { UsersTab } from "@/features/users/components/users-tab";
 import {
   Tabs,
   TabsContent,
@@ -64,12 +65,7 @@ function AdminPage() {
         </TabsContent>
 
         <TabsContent value="users" className="mt-6">
-          <div className="flex flex-col items-center gap-3 border border-border py-16">
-            <UsersIcon className="size-8 text-muted-foreground/40" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Gerenciamento de usuários em breve
-            </span>
-          </div>
+          <UsersTab />
         </TabsContent>
       </Tabs>
     </div>
