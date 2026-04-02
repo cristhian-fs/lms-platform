@@ -29,10 +29,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@lms-platform/ui/components/tabs";
-import { Loader2, Upload, X } from "lucide-react";
+import { FolderOpen, Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import type { CourseCreateBody, Level } from "../types";
+import type { CourseCreateBody, Level, ParsedCourse } from "../types";
 import {
   Select,
   SelectContent,
@@ -424,6 +424,173 @@ function JsonUpload({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+// ─── Local Import ─────────────────────────────────────────────────────────────
+
+function cleanPath(raw: string) {
+  // Strip shell escape sequences (e.g. "foo\ bar" → "foo bar")
+  return raw.trim().replace(/\\ /g, " ");
+}
+
+function LocalImportForm({ onSuccess }: { onSuccess: () => void }) {
+  const queryClient = useQueryClient();
+  const [path, setPath] = useState("");
+  const [level, setLevel] = useState<Level>("beginner");
+  const [preview, setPreview] = useState<ParsedCourse | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const { mutate: fetchPreview, isPending: isPreviewing } = useMutation({
+    mutationFn: () => api.course.previewImport(cleanPath(path)),
+    onSuccess: (res) => {
+      setPreview(res.data);
+      setPreviewError(null);
+    },
+    onError: (err) => {
+      setPreviewError(err.message);
+      setPreview(null);
+    },
+  });
+
+  const { mutate: syncCourse, isPending: isSyncing } = useMutation({
+    mutationFn: () => api.course.syncImport(cleanPath(path), level),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: api.course.keys.all() });
+      const {
+        modulesCreated,
+        lessonsCreated,
+        modulesUpdated,
+        lessonsUpdated,
+        modulesDeleted,
+        lessonsDeleted,
+      } = res.data;
+      const parts = [
+        `${modulesCreated + modulesUpdated} módulo(s)`,
+        `${lessonsCreated + lessonsUpdated} aula(s)`,
+      ];
+      if (modulesDeleted + lessonsDeleted > 0) {
+        parts.push(`${modulesDeleted + lessonsDeleted} removido(s)`);
+      }
+      toast.success(`Curso importado: ${parts.join(", ")}`);
+      onSuccess();
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
+  const totalLessons = preview?.modules.reduce(
+    (sum, m) => sum + m.lessons.length,
+    0,
+  );
+
+  return (
+    <div className="flex flex-col gap-4 pt-4">
+      <Field>
+        <FieldLabel>Caminho do diretório</FieldLabel>
+        <div className="flex gap-2">
+          <Input
+            value={path}
+            onChange={(e) => {
+              setPath(e.target.value);
+              setPreview(null);
+              setPreviewError(null);
+            }}
+            placeholder="/home/user/meus-cursos/nome-do-curso"
+            autoComplete="off"
+            className="font-mono text-xs"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!path.trim() || isPreviewing}
+            onClick={() => fetchPreview()}
+          >
+            {isPreviewing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FolderOpen className="h-4 w-4" />
+            )}
+            Preview
+          </Button>
+        </div>
+        {previewError && (
+          <ul className="flex flex-col gap-0.5">
+            {previewError.split("\n").map((msg, i) => (
+              <li key={i} className="text-xs text-destructive">
+                {msg}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Field>
+
+      {preview && (
+        <div className="flex flex-col gap-3 rounded border border-border bg-muted/30 p-3 text-sm">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-medium">{preview.suggestedTitle}</span>
+            <span className="font-mono text-xs text-muted-foreground">
+              /{preview.suggestedSlug}
+            </span>
+            {preview.descriptionPath && (
+              <span className="text-xs text-muted-foreground">
+                description.txt detectado
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <span>{preview.modules.length} módulo(s)</span>
+            <span>{totalLessons} aula(s)</span>
+          </div>
+
+          <ul className="flex flex-col gap-1">
+            {preview.modules.map((mod) => (
+              <li key={mod.dirName} className="text-xs">
+                <span className="font-medium">{mod.title}</span>
+                <span className="ml-2 text-muted-foreground">
+                  ({mod.lessons.length} aula(s))
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <Field orientation="responsive">
+        <FieldContent>
+          <FieldLabel>Nível do curso</FieldLabel>
+        </FieldContent>
+        <Select value={level} onValueChange={(v) => setLevel(v as Level)}>
+          <SelectTrigger className="min-w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="item-aligned">
+            {LEVELS.map((l) => (
+              <SelectItem key={l} value={l}>
+                {l.charAt(0).toUpperCase() + l.slice(1)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <DialogFooter showCloseButton>
+        <Button
+          type="button"
+          disabled={!preview || isSyncing}
+          onClick={() => syncCourse()}
+        >
+          {isSyncing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FolderOpen className="h-4 w-4" />
+          )}
+          {isSyncing ? "Importando…" : "Importar Curso"}
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
 // ─── Dialog ───────────────────────────────────────────────────────────────────
 
 export function UploadCourseDialog() {
@@ -451,6 +618,7 @@ export function UploadCourseDialog() {
           <TabsList>
             <TabsTrigger value="manual">Manual</TabsTrigger>
             <TabsTrigger value="json">Upload JSON</TabsTrigger>
+            <TabsTrigger value="local">Local</TabsTrigger>
           </TabsList>
 
           <TabsContent value="manual">
@@ -459,6 +627,10 @@ export function UploadCourseDialog() {
 
           <TabsContent value="json">
             <JsonUpload onSuccess={() => setOpen(false)} />
+          </TabsContent>
+
+          <TabsContent value="local">
+            <LocalImportForm onSuccess={() => setOpen(false)} />
           </TabsContent>
         </Tabs>
       </DialogContent>

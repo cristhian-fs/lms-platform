@@ -13,6 +13,7 @@ export const modules = t.pgTable(
       .references(() => courses.id, { onDelete: "cascade" }),
     title: t.varchar("title", { length: 255 }).notNull(),
     order: t.integer("order").notNull(),
+    sourceDirName: t.varchar("source_dir_name", { length: 512 }),
     createdAt: t.timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [t.index("modules_course_id_idx").on(table.courseId)],

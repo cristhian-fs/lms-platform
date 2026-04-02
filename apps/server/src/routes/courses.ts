@@ -1,5 +1,6 @@
 import * as courseService from "@lms-platform/api/services/course";
 import * as courseImportService from "@lms-platform/api/services/courseImport";
+import * as courseSyncService from "@lms-platform/api/services/courseSync";
 import Elysia, { t } from "elysia";
 
 import { ok } from "@/helpers/response";
@@ -52,6 +53,26 @@ export const courseRoutes = new Elysia()
     async ({ body }) =>
       ok(await courseImportService.previewFromPath(body.path)),
     { body: t.Object({ path: t.String() }) },
+  )
+  .post(
+    "/api/courses/import/sync",
+    async ({ body }) =>
+      ok(
+        await courseSyncService.syncFromPath(body.path, body.level),
+        "Course synced",
+      ),
+    {
+      body: t.Object({
+        path: t.String(),
+        level: t.Optional(
+          t.Union([
+            t.Literal("beginner"),
+            t.Literal("intermediate"),
+            t.Literal("advanced"),
+          ]),
+        ),
+      }),
+    },
   )
   .post(
     "/api/courses",

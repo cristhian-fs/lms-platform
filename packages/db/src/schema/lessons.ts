@@ -24,6 +24,7 @@ export const lessons = t.pgTable(
     durationSeconds: t.integer("duration_seconds").notNull().default(0),
     order: t.integer("order").notNull(),
     isPreview: t.boolean("is_preview").notNull().default(false),
+    sourceDirName: t.varchar("source_dir_name", { length: 512 }),
     createdAt: t.timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [t.index("lessons_module_id_idx").on(table.moduleId)],

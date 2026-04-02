@@ -4,7 +4,7 @@ export type ParsedLesson = {
   title: string;
   order: number;
   dirName: string;
-  playlistPath: string;
+  videoPath: string;
 };
 
 export type ParsedModule = {
@@ -19,7 +19,19 @@ export type ParsedCourse = {
   suggestedTitle: string;
   suggestedSlug: string;
   thumbnailPath: string;
+  descriptionPath?: string;
   modules: ParsedModule[];
+};
+
+export type SyncResult = {
+  courseId: string;
+  slug: string;
+  modulesCreated: number;
+  modulesUpdated: number;
+  modulesDeleted: number;
+  lessonsCreated: number;
+  lessonsUpdated: number;
+  lessonsDeleted: number;
 };
 
 export type UseQueryParams<TData> = Omit<
