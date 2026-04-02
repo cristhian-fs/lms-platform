@@ -13,6 +13,7 @@ import { moduleRoutes } from "./routes/modules";
 import { progressRoutes } from "./routes/progress";
 import { ratingRoutes } from "./routes/ratings";
 import { uploadRoutes } from "./routes/upload";
+import { localStreamRoutes } from "./routes/localStream";
 import { adminUserRoutes } from "./routes/admin/users";
 import { errorHandler } from "./plugins/error-handler";
 
@@ -43,5 +44,6 @@ export const app = new Elysia({ adapter: node() })
   .use(progressRoutes)
   .use(ratingRoutes)
   .use(uploadRoutes)
+  .use(localStreamRoutes)
   .use(adminUserRoutes)
   .get("/", () => "OK");
