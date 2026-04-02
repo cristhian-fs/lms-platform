@@ -1,7 +1,7 @@
 import { BookOpen, Clock, GraduationCap, Layers } from "lucide-react";
 import { cn } from "@lms-platform/ui/lib/utils";
 import type { Course, EnrollmentItem } from "../types";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, thumbnailSrc } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 
 const LEVEL_LABEL: Record<Course["level"], string> = {
@@ -39,9 +39,9 @@ export function CourseCard({ course, enrollment }: CourseCardProps) {
 
       {/* Viewport */}
       <div className="relative overflow-hidden h-40 shrink-0">
-        {course.thumbnailUrl ? (
+        {thumbnailSrc(course.thumbnailUrl) ? (
           <img
-            src={course.thumbnailUrl}
+            src={thumbnailSrc(course.thumbnailUrl)!}
             alt={course.title}
             width={400}
             height={160}

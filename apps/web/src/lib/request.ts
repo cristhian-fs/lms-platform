@@ -27,7 +27,14 @@ export async function request<T>(
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
 
-  const json: ApiResponse<T> = await res.json();
+  const text = await res.text();
+
+  let json: ApiResponse<T>;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Server error (${res.status})`);
+  }
 
   if (!json.success) throw new Error(json.message);
   return json;

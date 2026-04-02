@@ -4,17 +4,23 @@ import MediaThemeSutro from "player.style/sutro/react";
 
 interface VideoPlayerProps {
   src: string;
+  type?: "hls" | "mp4";
   title?: string;
   className?: string;
   onEnded?: () => void;
 }
 
-export function VideoPlayer({ src, title, className, onEnded }: VideoPlayerProps) {
+export function VideoPlayer({ src, type = "hls", title, className, onEnded }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    if (type === "mp4") {
+      video.src = src;
+      return;
+    }
 
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: true });
@@ -27,7 +33,7 @@ export function VideoPlayer({ src, title, className, onEnded }: VideoPlayerProps
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
     }
-  }, [src]);
+  }, [src, type]);
 
   useEffect(() => {
     const video = videoRef.current;

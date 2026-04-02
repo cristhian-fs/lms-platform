@@ -28,6 +28,7 @@ import type { Course } from "../types";
 import { EditCourseDialog } from "./edit-course-dialog";
 import { ManageCourseDialog } from "./manage-course-dialog";
 import { UploadCourseDialog } from "./upload-course-dialog";
+import { thumbnailSrc } from "@/lib/utils";
 
 const LEVEL_LABEL: Record<Course["level"], string> = {
   beginner: "Iniciante",
@@ -201,9 +202,9 @@ function CourseRow({
     <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20">
       {/* Thumbnail */}
       <div className="shrink-0 w-16 h-10 overflow-hidden bg-muted flex items-center justify-center">
-        {course.thumbnailUrl ? (
+        {thumbnailSrc(course.thumbnailUrl) ? (
           <img
-            src={course.thumbnailUrl}
+            src={thumbnailSrc(course.thumbnailUrl)!}
             alt=""
             className="w-full h-full object-cover"
           />

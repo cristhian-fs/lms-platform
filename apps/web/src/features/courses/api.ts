@@ -9,6 +9,7 @@ import type {
   LessonCreateBody,
   LessonUpdateBody,
   ParsedCourse,
+  SyncResult,
 } from "./types";
 
 export const coursesApi = {
@@ -42,6 +43,11 @@ export const coursesApi = {
     request<ParsedCourse>("/api/courses/import/preview", {
       method: "POST",
       body: JSON.stringify({ path }),
+    }),
+  syncImport: (path: string, level?: string) =>
+    request<SyncResult>("/api/courses/import/sync", {
+      method: "POST",
+      body: JSON.stringify({ path, level }),
     }),
   modules: {
     create: (courseId: string, body: { title: string; order: number }) =>
