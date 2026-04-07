@@ -1,6 +1,6 @@
 import { db } from "@lms-platform/db";
 import { modules, type NewModule } from "@lms-platform/db/schema/modules";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export function findById(id: string) {
   return db.query.modules.findFirst({
@@ -17,6 +17,12 @@ export function findByCourse(courseId: string) {
         orderBy: (l, { asc }) => [asc(l.order)],
       },
     },
+  });
+}
+
+export function findByCourseAndDirName(courseId: string, dirName: string) {
+  return db.query.modules.findFirst({
+    where: and(eq(modules.courseId, courseId), eq(modules.sourceDirName, dirName)),
   });
 }
 

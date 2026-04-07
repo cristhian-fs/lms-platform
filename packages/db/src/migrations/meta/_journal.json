@@ -15,6 +15,13 @@
       "when": 1774705015788,
       "tag": "0001_acoustic_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775070233092,
+      "tag": "0002_fine_jocasta",
+      "breakpoints": true
     }
   ]
 }

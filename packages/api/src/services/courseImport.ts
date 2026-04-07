@@ -1,13 +1,20 @@
 import { readdir, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
+import { AppError } from "../errors";
 
-const THUMBNAIL_NAMES = ["thumbnail.jpg", "thumbnail.jpeg", "thumbnail.png", "thumbnail.avif", "thumbnail.webp"];
+const THUMBNAIL_NAMES = [
+  "thumbnail.jpg",
+  "thumbnail.jpeg",
+  "thumbnail.png",
+  "thumbnail.avif",
+  "thumbnail.webp",
+];
 
 export interface ParsedLesson {
   title: string;
   order: number;
   dirName: string;
-  playlistPath: string;
+  videoPath: string;
 }
 
 export interface ParsedModule {
@@ -22,10 +29,14 @@ export interface ParsedCourse {
   suggestedTitle: string;
   suggestedSlug: string;
   thumbnailPath: string;
+  descriptionPath?: string;
   modules: ParsedModule[];
 }
 
-function parseOrderAndTitle(name: string): { order: number | null; title: string } {
+function parseOrderAndTitle(name: string): {
+  order: number | null;
+  title: string;
+} {
   // Matches: "01 - Title", "1. Title", "01_Title", "1 Title", "01-title"
   const match = name.match(/^(\d+)[\s.\-_]+(.+)$/);
   if (match) {
@@ -41,9 +52,9 @@ function toSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export class CourseImportError extends Error {
-  constructor(message: string) {
-    super(message);
+export class CourseImportError extends AppError {
+  constructor(messages: string | string[]) {
+    super(400, Array.isArray(messages) ? messages.join("\n") : messages);
     this.name = "CourseImportError";
   }
 }
@@ -56,15 +67,20 @@ export async function previewFromPath(dirPath: string): Promise<ParsedCourse> {
 
   const dirName = basename(dirPath);
   const entries = await readdir(dirPath, { withFileTypes: true });
+  const errors: string[] = [];
 
   const thumbnailEntry = entries.find(
     (e) => e.isFile() && THUMBNAIL_NAMES.includes(e.name.toLowerCase()),
   );
   if (!thumbnailEntry) {
-    throw new CourseImportError(
+    errors.push(
       "No thumbnail found. Expected thumbnail.jpg, .png, .jpeg, .avif, or .webp in the root.",
     );
   }
+
+  const descriptionEntry = entries.find(
+    (e) => e.isFile() && e.name.toLowerCase() === "description.txt",
+  );
 
   const moduleDirs = entries
     .filter((e) => e.isDirectory())
@@ -77,7 +93,8 @@ export async function previewFromPath(dirPath: string): Promise<ParsedCourse> {
     .map((m, i) => ({ ...m, order: m.order ?? i + 1 }));
 
   if (moduleDirs.length === 0) {
-    throw new CourseImportError("No module directories found inside the course folder.");
+    errors.push("No module directories found inside the course folder.");
+    throw new CourseImportError(errors);
   }
 
   const modules: ParsedModule[] = [];
@@ -97,9 +114,8 @@ export async function previewFromPath(dirPath: string): Promise<ParsedCourse> {
       .map((l, i) => ({ ...l, order: l.order ?? i + 1 }));
 
     if (lessonDirs.length === 0) {
-      throw new CourseImportError(
-        `Module "${mod.dirName}" has no lesson directories.`,
-      );
+      errors.push(`Module "${mod.dirName}" has no lesson directories.`);
+      continue;
     }
 
     const lessons: ParsedLesson[] = [];
@@ -107,19 +123,20 @@ export async function previewFromPath(dirPath: string): Promise<ParsedCourse> {
     for (const lesson of lessonDirs) {
       const lessonPath = join(modulePath, lesson.dirName);
       const lessonEntries = await readdir(lessonPath, { withFileTypes: true });
-      const hasPlaylist = lessonEntries.some(
-        (e) => e.isFile() && e.name === "playlist.m3u8",
+      const videoEntry = lessonEntries.find(
+        (e) => e.isFile() && e.name.toLowerCase().endsWith(".mp4"),
       );
-      if (!hasPlaylist) {
-        throw new CourseImportError(
-          `Lesson "${lesson.dirName}" in module "${mod.dirName}" is missing playlist.m3u8.`,
+      if (!videoEntry) {
+        errors.push(
+          `Lesson "${lesson.dirName}" in module "${mod.dirName}" has no .mp4 file.`,
         );
+        continue;
       }
       lessons.push({
         title: lesson.title,
         order: lesson.order,
         dirName: lesson.dirName,
-        playlistPath: join(lessonPath, "playlist.m3u8"),
+        videoPath: join(lessonPath, videoEntry.name),
       });
     }
 
@@ -131,13 +148,18 @@ export async function previewFromPath(dirPath: string): Promise<ParsedCourse> {
     });
   }
 
+  if (errors.length > 0) throw new CourseImportError(errors);
+
   const { title: suggestedTitle } = parseOrderAndTitle(dirName);
 
   return {
     dirName,
     suggestedTitle,
     suggestedSlug: toSlug(suggestedTitle),
-    thumbnailPath: join(dirPath, thumbnailEntry.name),
+    thumbnailPath: join(dirPath, thumbnailEntry!.name),
+    descriptionPath: descriptionEntry
+      ? join(dirPath, descriptionEntry.name)
+      : undefined,
     modules,
   };
 }
