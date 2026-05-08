@@ -48,7 +48,7 @@ export function VideoPlayer({ src, type = "hls", title, className, onEnded }: Vi
       className={className}
       style={{ width: "100%", aspectRatio: "16/9" }}
     >
-      <video ref={videoRef} slot="media" playsInline />
+      <video ref={videoRef} slot="media" playsInline crossOrigin="use-credentials" />
     </MediaThemeSutro>
   );
 }

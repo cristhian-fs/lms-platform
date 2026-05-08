@@ -23,7 +23,8 @@ export const app = new Elysia({ adapter: node() })
     cors({
       origin: env.CORS_ORIGIN,
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization", "Range"],
+      exposeHeaders: ["Content-Range", "Accept-Ranges", "Content-Length"],
       credentials: true,
     }),
   )

@@ -1,0 +1,57 @@
+name: lms_platform
+
+# Copy .env.compose to .env or run: docker compose --env-file .env.compose up --build
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: lms_platform-postgres
+    environment:
+      POSTGRES_DB: lms_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - lms_platform_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/lms_platform
+      BETTER_AUTH_SECRET: R1M58j74iSuE2R6PNtLRbjsTfpAbtb4H
+      BETTER_AUTH_URL: http://localhost:${SERVER_PORT:-5554}
+      CORS_ORIGIN: http://localhost:${WEB_PORT:-5555}
+      NODE_ENV: production
+      SEED_ADMIN_NAME: cris
+      SEED_ADMIN_EMAIL: cristhianfernandolp@gmail.com
+      SEED_ADMIN_PASSWORD: Password1000!
+    volumes:
+      - ${LOCAL_MEDIA_PATH}:${LOCAL_MEDIA_PATH}:ro
+    ports:
+      - "${SERVER_PORT:-5554}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_SERVER_URL: http://localhost:${SERVER_PORT:-5554}
+    ports:
+      - "${WEB_PORT:-5555}:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  lms_platform_postgres_data:

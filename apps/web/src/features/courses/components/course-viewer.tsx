@@ -31,7 +31,7 @@ export function CourseViewer({
   const isLocalVideo = lesson.videoUrl?.startsWith("/");
   const src = isLocalVideo
     ? `${env.VITE_SERVER_URL}/api/local-stream/${lesson.id}`
-    : `${env.VITE_SERVER_URL}/api/stream/${lesson.id}/playlist.m3u8`;
+    : `${lesson.videoUrl}`;
 
   return (
     <div className="flex flex-col gap-4">
